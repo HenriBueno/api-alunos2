@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Students {
+  id String @id @default(uuid()) @db.Uuid
+  name String @db.VarChar(100)
+  email String @unique
+  user Users?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  registrations Registrations[]
+  @@map("students")
+}
+
+model Users {
+  id String @id @default(uuid()) @db.Uuid
+  password String @db.VarChar(100)
+  enable Boolean @default(true)
+  token String?
+  studentId String @db.Uuid @map("student_id") @unique
+  student Students @relation(fields: [studentId], references: [id])
+  @@map("users")
+  
+}
+
+model Classrooms {
+  id String @id @default(uuid()) @db.Uuid
+  subject String @db.VarChar(100)
+  vacations Int @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  registrations Registrations[]
+  @@map("classrooms")
+}
+
+model Registrations {
+  id String @id @default(uuid()) @db.Uuid
+  studentId String @db.Uuid @map("student_id")
+  student Students @relation(fields: [studentId], references: [id])
+  classroomId String @db.Uuid @map("classroom_id")
+  classroom Classrooms @relation(fields: [classroomId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("registrations")
+}
